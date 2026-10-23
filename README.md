@@ -9,7 +9,7 @@ A free, simple sight word practice app for early readers. It works like flash ca
 
 ## For families
 
-**App link:** `https://alexflage.github.io/Sight-Word-Stars/` (replace with your published address)
+**App link:** `https://alexflage.github.io/Sight-Word-Stars/'
 
 ### Install on a phone or tablet
 
