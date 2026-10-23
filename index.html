@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Andika:wght@400;700&display=swap" rel="stylesheet">
+<title>Sight Word Stars</title>
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#ff7a59">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<style>
+:root{--bg:#fff8e7;--card:#ffffff;--ink:#2b2a4c;--muted:#6b6a8a;--accent:#ff7a59;--good:#2eb67d;--bad:#e5484d;--line:#f0e3c0;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+:root{--star:#ffb800}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#1d1b32;--card:#2a2849;--ink:#f4f1ff;--muted:#a9a6cc;--line:#3b3860}}
+:root[data-theme="dark"]{--bg:#1d1b32;--card:#2a2849;--ink:#f4f1ff;--muted:#a9a6cc;--line:#3b3860}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{background:var(--bg);color:var(--ink);font-family:"Andika","Century Gothic","Trebuchet MS",system-ui,sans-serif;display:flex;flex-direction:column;align-items:center}
+main{width:100%;max-width:520px;flex:1;padding:16px;display:flex;flex-direction:column;gap:14px}
+h1{margin:6px 0 0;font-size:1.7rem;text-align:center}
+.top{flex-wrap:wrap;gap:6px;display:flex;justify-content:space-between;align-items:center;font-size:1.1rem}
+.pill{background:var(--card);border:2px solid var(--line);border-radius:999px;padding:6px 14px;font-weight:700}
+button{font:inherit;color:inherit;cursor:pointer;border:0;border-radius:18px;padding:14px 18px;background:var(--card);border:2px solid var(--line);font-weight:700;font-size:1.1rem}
+button.big{background:var(--accent);color:#fff;border-color:transparent;font-size:1.5rem;padding:20px}
+button.good{background:var(--good);color:#fff;border-color:transparent}
+button.bad{background:var(--bad);color:#fff;border-color:transparent}
+button.small{font-size:.9rem;padding:8px 12px;border-radius:12px}
+.modes{display:flex;gap:8px}
+.modes button{flex:1}
+.modes button.on{border-color:var(--accent);background:var(--accent);color:#fff}
+.word{background:var(--card);border:3px solid var(--line);border-radius:28px;min-height:230px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;font-size:clamp(3.5rem,20vw,6.5rem);font-weight:800;text-align:center;user-select:none;cursor:pointer}
+.word small{font-size:1rem;color:var(--muted);font-weight:600}
+.row{display:flex;gap:10px}.row>*{flex:1}
+.bar{height:14px;background:var(--line);border-radius:99px;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--star);width:0;transition:width .3s}
+.choices{display:grid;gap:10px}
+.choices button{font-size:2.2rem;padding:18px}
+.shake{animation:sh .35s}.pop{animation:pp .5s}
+@keyframes sh{25%{transform:translateX(-8px)}75%{transform:translateX(8px)}}
+@keyframes pp{40%{transform:scale(1.25) rotate(-4deg)}}
+.stickers{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;font-size:2.6rem;text-align:center}
+.center{text-align:center}.muted{color:var(--muted)}
+textarea,input{font:inherit;width:100%;padding:10px;border-radius:12px;border:2px solid var(--line);background:var(--card);color:var(--ink)}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{background:var(--card);border:2px solid var(--line);border-radius:999px;padding:4px 6px 4px 12px;font-weight:700;display:flex;gap:6px;align-items:center}
+.chip b{cursor:pointer;color:var(--bad);padding:0 6px}
+.mast{border-color:var(--good)}
+.slot{background:var(--card);border:2px solid var(--line);border-radius:16px;padding:8px 0}
+.rw{background:var(--card);border:2px solid var(--line);border-radius:16px;padding:10px;display:flex;flex-direction:column;gap:6px;text-align:center}
+.tbar{height:6px;background:var(--line);border-radius:99px;overflow:hidden}
+.tbar i{display:block;height:100%;width:100%;background:var(--good)}
+.tbar i.over{background:var(--muted);opacity:.4}
+.chip{cursor:pointer;user-select:none}
+.chip.lock{opacity:.45}
+.card2{display:grid;grid-template-columns:1fr 1fr;gap:6px;background:var(--card);border:2px solid var(--line);border-radius:16px;padding:10px}
+.slot.empty{color:var(--muted);opacity:.5;border-style:dashed}
+.cf{position:fixed;top:-40px;font-size:2rem;pointer-events:none;z-index:20;animation:fall 2.4s linear forwards}
+@keyframes fall{to{transform:translateY(110vh) rotate(360deg)}}
+</style>
+</head>
+<body>
+<main id="app"></main>
+<script>
+var DEFAULTS=["red","dad","mom","kid","to","me","big","dip","the","a","I","see","can","and","up","in","it","is","at","we","go","no","my","sit","hop","run","cat","dog","sun","yes",
+"look","play","come","here","you","said","are","was","like","little","one","two","with","for","have","he","she","they","do","so","on","of","down","away","find","funny","help","jump","make","not","blue","yellow","where","three","four","ride","now","good","want","what","ball","tree",
+"bat","hat","mat","pan","man","fan","van","bag","tag","pen","hen","ten","bed","net","wet","pet","pig","wig","fin","win","pin","lip","hip","hit","bit","fit","hot","pot","dot","mop","top","box","fox","dug","bug","hug","mug","rug","fun","bun","cup","pup","nut","cut","bus","mud","jam","ham","cap","map","nap","tap","lap","log","hog","jog","fog","web","zip","sad","mad","bad","had","let","set","got","him","his","did"];
+var STICKERS=["🦄","🐱","🐶","🐸","🦋","🐢","🌈","🚀","🍦","🎈","🐠","🦊","🐼","🌻","🍓","🎨","🐙","🦉","🍪","🎸",
+"🐘","🦁","🐯","🐵","🐰","🐻","🐨","🐷","🐮","🐔","🐧","🦆","🦈","🐬","🐳","🦀","🐞","🐝","🦖","🦕",
+"🌙","☀️","⛄","🌺","🍎","🍌","🍉","🍕","🧁","🎂","🎁","⚽","🚲","🚒","🚜","✈️","⛵","🏰","🎹","🥁"];
+var STARS_PER_STICKER=25, SESSION=10, KEY="sightWordStars.v1";
+var S=null, view="home", sess=null, app=document.getElementById("app");
+
+function fresh(){return {words:DEFAULTS.map(function(w){return {w:w,box:0}}),stars:0,stickers:[],mode:"flip"}}
+function load(){try{var r=localStorage.getItem(KEY);if(r){S=JSON.parse(r)}}catch(e){}if(!S||!S.words)S=fresh();S.streak=S.streak||0;S.lastDay=S.lastDay||"";S.badges=S.badges||[];S.rewards=S.rewards||[];if(S.name===undefined)S.name="Emerson";if(!S.seen)S.seen=DEFAULTS.slice(0,30);var have={};S.words.forEach(function(x){have[x.w.toLowerCase()]=1});DEFAULTS.forEach(function(w){if(S.seen.indexOf(w)<0){S.seen.push(w);if(!have[w.toLowerCase()])S.words.push({w:w,box:0,on:false})}});S.words.forEach(function(x,i){if(x.on===undefined)x.on=S.unlockAll?true:i<Math.min(S.words.length,12+2*mastered())});save()}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
+function esc(t){var d=document.createElement("div");d.textContent=t;return d.innerHTML}
+function toast(m){var d=document.createElement("div");d.textContent=m;d.style.cssText="position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:12px;z-index:9;text-align:center";document.body.appendChild(d);setTimeout(function(){d.remove()},3500)}
+function speak(t){if(S.mute)return;try{if(!window.speechSynthesis){toast("Voice isn’t available here. Try opening the link in Chrome.");return}speechSynthesis.cancel();var u=new SpeechSynthesisUtterance(t);u.rate=.8;u.lang="en-US";speechSynthesis.speak(u)}catch(e){toast("Voice isn’t available here. Try opening the link in Chrome.")}}
+var AC=null;
+function tone(f,d,t){if(S.mute)return;try{AC=AC||new (window.AudioContext||window.webkitAudioContext)();var o=AC.createOscillator(),g=AC.createGain();o.type="sine";o.frequency.value=f;g.gain.setValueAtTime(.15,AC.currentTime+t);g.gain.exponentialRampToValueAtTime(.001,AC.currentTime+t+d);o.connect(g);g.connect(AC.destination);o.start(AC.currentTime+t);o.stop(AC.currentTime+t+d)}catch(e){}}
+function chime(ok){if(ok){tone(660,.18,0);tone(880,.18,.12);tone(1100,.3,.24)}else{tone(300,.25,0)}}
+function today(d){d=d||new Date();return d.getFullYear()+"-"+(d.getMonth()+1)+"-"+d.getDate()}
+function curStreak(){if(!S.lastDay)return 0;var y=new Date();y.setDate(y.getDate()-1);return(S.lastDay===today()||S.lastDay===today(y))?S.streak:0}
+function updateStreak(){
+  if(S.lastDay===today())return;
+  S.streak=curStreak()+1;S.lastDay=today();
+  if(S.streak%3===0){award();sess.streakBonus=true}
+}
+var SPECIAL=["👑","🏆","💎","🎖️","🦸","🧙","🐉","🌟"];
+function confetti(){
+  var e=["⭐","🎉","✨","🎈","🌟"];
+  for(var i=0;i<30;i++){var s=document.createElement("span");s.className="cf";s.textContent=e[i%e.length];s.style.left=Math.random()*100+"vw";s.style.animationDelay=Math.random()*.6+"s";document.body.appendChild(s);(function(n){setTimeout(function(){n.remove()},3200)})(s)}
+}
+function autoUnlock(){if(S.auto===false)return;var c=0;S.words.forEach(function(x){if(x.on===false&&c<2){x.on=true;c++}});if(c)sess.newWords=(sess.newWords||0)+c}
+function bulkHtml(){return '<p class="center">🟢 Words turned on: <b id="onc">'+unlockedCount()+'</b> of '+S.words.length+'</p><div class="row"><button class="small" id="aon">All on</button><button class="small" id="aof">All off</button></div><div class="row"><button class="small" id="n5">Turn on 5 more</button><button class="small" id="nmast">Turn off mastered</button></div><button class="small" id="au">Auto-unlock new words: '+(S.auto===false?"OFF":"ON")+' (2 per mastered word, tap to change)</button>'}
+function rewardsHtml(){
+  var h="";
+  S.rewards.forEach(function(r){if(r.hit&&!r.given)h+='<div class="pill center">🎁 '+esc(r.n)+' earned! Ask a grown-up!</div>'});
+  var nx=S.rewards.filter(function(r){return !r.hit}).sort(function(a,b){return a.s-b.s})[0];
+  if(nx)h+='<div class="rw"><div>🎁 Next prize: <b>'+esc(nx.n)+'</b> ('+Math.min(S.stars,nx.s)+' / '+nx.s+' ⭐)</div><div class="bar"><i style="width:'+Math.min(100,Math.round(S.stars/nx.s*100))+'%"></i></div></div>';
+  return h;
+}
+function rewardsAdmin(){
+  S.rewards.sort(function(a,b){return a.s-b.s});
+  var h='<h3 class="center" style="margin:6px 0 0">🎁 Prizes</h3>';
+  h+=S.rewards.length?S.rewards.map(function(r,i){return '<div class="row" style="align-items:center"><span style="flex:3">'+esc(r.n)+' at '+r.s+' ⭐'+(r.hit?(r.given?' ✅ given':' 🎉 earned'):'')+'</span>'+(r.hit&&!r.given?'<button class="small good" data-g="'+i+'">Given</button>':'')+'<button class="small" data-d="'+i+'">Remove</button></div>'}).join(""):'<p class="center muted">No prizes yet. Add one below, like “Movie night” at 100 stars.</p>';
+  h+='<div class="row"><input id="rn" placeholder="Prize (e.g. Movie night)" maxlength="30"><input id="rs2" type="number" inputmode="numeric" placeholder="Stars" style="max-width:90px"></div><button class="good" id="ra">Add prize</button>';
+  return h;
+}
+function limit(){return S.timeLimit===undefined?5:S.timeLimit}
+function tbarHtml(){return limit()?'<div class="tbar"><i id="tb"></i></div>':''}
+function startTimer(){
+  clearInterval(window._tm);sess.t0=Date.now();
+  var L=limit(),el=document.getElementById("tb");
+  if(!L||!el)return;
+  window._tm=setInterval(function(){var p=Math.min(1,(Date.now()-sess.t0)/(L*1000));el.style.width=(100-p*100)+"%";el.className=p>=1?"over":"";if(p>=1)clearInterval(window._tm)},100);
+}
+function unlockedCount(){return unlocked().length}
+function unlocked(){return S.words.filter(function(x){return x.on!==false})}
+function trickyWords(){return S.words.filter(function(x){return (x.miss||0)>=2&&x.box<3})}
+function progressHtml(){
+  var m=0,l=0,n=0,k=0,u=unlockedCount();
+  S.words.forEach(function(x,i){if(x.on===false){k++}else if(x.box>=3)m++;else if(x.box>0)l++;else n++});
+  var tr=trickyWords();
+  var h='<div class="card2"><div>✅ Mastered: <b>'+m+'</b></div><div>📘 Learning: <b>'+l+'</b></div><div>🆕 Not yet learned: <b>'+n+'</b></div><div>⏸️ Turned off: <b>'+k+'</b></div></div>';
+  h+='<p class="center">🎯 Tricky words: '+(tr.length?tr.map(function(x){return esc(x.w)}).join(", "):"none yet")+'</p>';
+  
+  h+=summaryHtml();h+=rewardsAdmin();
+  h+='<button id="tl">Time limit per word: '+(limit()?limit()+" seconds":"Off")+' (tap to change)</button>';
+  h+='<button id="rl">Cards per round: '+(S.roundLen||10)+' (tap to change)</button>';
+  h+='<button id="nm">Child’s name: '+esc(S.name||"none")+' (tap to change)</button>';
+  h+='<button id="bk2">💾 Backup or restore progress</button>';
+  return h;
+}
+function mastered(){return S.words.filter(function(x){return x.box>=3}).length}
+
+function dayLog(){S.log=S.log||{};var k=today();return S.log[k]||(S.log[k]={r:0,m:0,t:0,k:0})}
+function logAns(ok,el){var d=dayLog();if(ok)d.r++;else d.m++;d.t+=Math.min(20,Math.max(0,el||0))}
+function logM(){dayLog().k++}
+function summaryHtml(){
+  var rows="";
+  for(var i=0;i<7;i++){var dt=new Date();dt.setDate(dt.getDate()-i);var d=(S.log||{})[today(dt)];
+    if(d){var n=d.r+d.m;rows+='<div>'+(i===0?"Today":i===1?"Yesterday":dt.toLocaleDateString(undefined,{weekday:"short"}))+': '+n+' answers, '+d.r+' right, '+d.m+' missed, about '+Math.max(1,Math.round(d.t/60))+' min'+(d.k?', mastered '+d.k:'')+'</div>'}}
+  return '<h3 class="center" style="margin:6px 0 0">📅 Last 7 days</h3><div class="card2" style="grid-template-columns:1fr">'+(rows||'<div class="muted">No practice yet.</div>')+'</div>';
+}
+function isTricky(x){return (x.miss||0)>=2&&x.box<3}
+function pickSession2(){
+  var all=unlocked(),cap=Math.min(S.roundLen||SESSION,all.length);
+  var wt=[5,3,2],pool=[],mast=[];
+  all.forEach(function(x){
+    if(x.box>=3){mast.push(x)}
+    else if(isTricky(x)){pool.push({x:x,w:9},{x:x,w:9})}
+    else pool.push({x:x,w:wt[x.box]})
+  });
+  mast.sort(function(){return Math.random()-.5});
+  mast.forEach(function(x){if(Math.random()<.25)pool.push({x:x,w:1})});
+  var m=0;while(pool.length<cap&&m<mast.length){if(!pool.some(function(p){return p.x===mast[m]}))pool.push({x:mast[m],w:1});m++}
+  var out=[];
+  while(out.length<cap&&pool.length){
+    var tot=0;pool.forEach(function(p){tot+=p.w});
+    var r=Math.random()*tot,i=0;
+    for(;i<pool.length;i++){r-=pool[i].w;if(r<=0)break}
+    out.push(pool.splice(Math.min(i,pool.length-1),1)[0].x);
+  }
+  for(var j=1;j<out.length;j++){if(out[j]===out[j-1]){for(var k=j+1;k<out.length;k++){if(out[k]!==out[j]){var t=out[j];out[j]=out[k];out[k]=t;break}}}}
+  return out;
+}
+function pickSession(){return pickSession2()}
+function pickSessionOld(){
+  var pool=unlocked(),out=[],wt=[5,3,2,1];
+  var cap=Math.min(S.roundLen||SESSION,pool.length);while(out.length<cap){
+    var tot=0;pool.forEach(function(x){tot+=wt[Math.min(x.box,3)]});
+    var r=Math.random()*tot,i=0;
+    for(;i<pool.length;i++){r-=wt[Math.min(pool[i].box,3)];if(r<=0)break}
+    out.push(pool.splice(Math.min(i,pool.length-1),1)[0]);
+  }
+  return out;
+}
+function startPlay(tr){
+  if(!unlocked().length){toast("Turn on some words first in Parent.");return}
+  var q=tr===true?trickyWords().sort(function(){return Math.random()-.5}).slice(0,S.roundLen||SESSION):pickSession();
+  sess={queue:q.slice(),total:q.length,done:0,missed:{},earned:0,flipped:false,wrongThisCard:false};
+  view="play";render();
+}
+function award(){
+  S.stars++;sess.earned++;S.rewards.forEach(function(r){if(!r.hit&&S.stars>=r.s){r.hit=true;sess.rewardsHit=(sess.rewardsHit||[]).concat([r.n])}});
+  var msg="";
+  if(S.stars%STARS_PER_STICKER===0){
+    var s=STICKERS[S.stickers.length%STICKERS.length];S.stickers.push(s);sess.newSticker=s;
+  }
+}
+function answer(ok){
+  var card=sess.queue[0];var el=(Date.now()-(sess.t0||Date.now()))/1000;clearInterval(window._tm);
+  if(ok&&limit()&&el>=limit()&&!sess.wrongThisCard&&!(sess.slowed&&sess.slowed[card.w])){sess.slowed=sess.slowed||{};sess.slowed[card.w]=1;card.box=0;card.miss=(card.miss||0)+1;sess.queue.push(sess.queue.shift());sess.flipped=false;sess.wrongThisCard=false;chime(false);logAns(false,el);toast("Nice job! Let’s try that one once more.");save();render();return}
+  logAns(ok,el);chime(ok);
+  if(ok){
+    if(!sess.wrongThisCard){var was=card.box;card.box=Math.min(3,card.box+1);award();if(was<3&&card.box>=3){card.miss=0;logM();autoUnlock();var em=SPECIAL[S.badges.length%SPECIAL.length];S.badges.push({w:card.w,e:em});sess.badges=(sess.badges||[]).concat([em+" "+card.w]);confetti();toast(em+" Mastered: "+card.w+"!")}}
+    sess.queue.shift();sess.done++;
+  }else{
+    card.box=0;
+    if(!sess.wrongThisCard){sess.wrongThisCard=true;card.miss=(card.miss||0)+1;sess.queue.push(sess.queue.shift())}
+  }
+  sess.flipped=false;
+  if(ok||true){sess.wrongThisCard=false}
+  save();
+  if(!sess.queue.length){updateStreak();save();view="done"}
+  render();
+}
+function choicesFor(card){
+  var others=unlocked().filter(function(x){return x.w!==card.w});
+  others.sort(function(a,b){return Math.abs(a.w.length-card.w.length)-Math.abs(b.w.length-card.w.length)+(Math.random()-.5)*3});
+  var c=others.slice(0,2).map(function(x){return x.w});c.push(card.w);
+  return c.sort(function(){return Math.random()-.5});
+}
+
+function render(){clearInterval(window._tm);
+  if(view==="home")return home();
+  if(view==="play")return play();
+  if(view==="done")return done();
+  if(view==="stickers")return stickers();
+  if(view==="parent")return parent();
+}
+function head(){return '<div class="top"><span class="pill">⭐ '+S.stars+'</span><span class="pill">🔥 '+curStreak()+'</span><span class="pill" id="snd" style="cursor:pointer">'+(S.mute?"🔇":"🔊")+'</span><span class="pill">🏅 '+mastered()+'/'+S.words.length+' mastered</span></div>'}
+
+function home(){
+  app.innerHTML=head()+'<h1>Hi, '+esc(S.name||"friend")+'! 👋</h1><p class="center" style="margin:0;font-weight:700">Sight Word Stars</p><p class="center muted">Collect a sticker for every '+STARS_PER_STICKER+' stars!</p>'+'<p class="center muted">📖 '+unlockedCount()+' of '+S.words.length+' words turned on</p>'+
+  rewardsHtml()+'<div class="modes"><button id="m1" class="'+(S.mode==="flip"?"on":"")+'">🃏 Flash cards</button><button id="m2" class="'+(S.mode==="pick"?"on":"")+'">👂 Pick the word</button></div>'+
+  '<button class="big" id="go">▶ Play</button>'+(trickyWords().length?'<button id="tr">🎯 Tricky words ('+trickyWords().length+')</button>':'')+
+  '<div class="row"><button id="st">🎟️ My stickers ('+S.stickers.length+')</button><button id="pa">🔒 Parent</button></div>';
+  document.getElementById("m1").onclick=function(){S.mode="flip";save();home()};
+  document.getElementById("m2").onclick=function(){S.mode="pick";save();home()};
+  document.getElementById("go").onclick=startPlay;var tb=document.getElementById("tr");if(tb)tb.onclick=function(){startPlay(true)};
+  document.getElementById("st").onclick=function(){view="stickers";render()};
+  document.getElementById("pa").onclick=gate;
+}
+function bar(){return '<div class="bar"><i style="width:'+Math.round(sess.done/sess.total*100)+'%"></i></div>'}
+function play(){
+  var c=sess.queue[0],h=head()+bar()+tbarHtml()+'<div class="muted center">Card '+(sess.done+1)+' of '+sess.total+'</div>';
+  if(S.mode==="flip"){
+    h+='<div class="word" id="w">'+esc(c.w)+'<small>🔊 tap to hear</small></div><div class="row"><button class="bad" id="no">Try again</button><button class="good" id="yes">Got it! ⭐</button></div>';
+    app.innerHTML=h+'<button class="small" id="q">Quit</button>';
+    document.getElementById("w").onclick=function(){speak(c.w)};
+    document.getElementById("yes").onclick=function(){answer(true)};
+    document.getElementById("no").onclick=function(){answer(false)};
+  }else{
+    var ch=choicesFor(c);
+    h+='<div class="word" id="w">🔊<small>Tap to hear, then pick the word</small></div><div class="choices" id="ch">'+ch.map(function(x){return '<button data-w="'+esc(x)+'">'+esc(x)+'</button>'}).join("")+'</div>';
+    app.innerHTML=h+'<button class="small" id="q">Quit</button>';
+    document.getElementById("w").onclick=function(){speak(c.w)};
+    Array.prototype.forEach.call(document.querySelectorAll("#ch button"),function(b){
+      b.onclick=function(){
+        if(b.getAttribute("data-w")===c.w){b.classList.add("good","pop");setTimeout(function(){answer(true)},450)}
+        else{b.classList.add("bad","shake");b.disabled=true;chime(false);logAns(false,0);if(!sess.wrongThisCard){sess.wrongThisCard=true;c.box=0;c.miss=(c.miss||0)+1}}
+      };
+    });
+    setTimeout(function(){speak(c.w)},250);
+  }
+  document.getElementById("q").onclick=function(){view="home";render()};startTimer();
+}
+function fixPickFlow(){}
+function done(){confetti();
+  var m=Object.keys(sess.missed).length;
+  app.innerHTML=head()+'<h1>🎉 Great job, '+esc(S.name||"friend")+'! 🎉</h1><p class="center" style="font-size:1.4rem">You earned <b>'+sess.earned+' ⭐</b></p>'+(sess.streakBonus?'<p class="center">🔥 '+curStreak()+' days in a row! Bonus star!</p>':'')+(sess.badges?'<p class="center">New word badges: '+sess.badges.join(", ")+'</p>':'')+(sess.rewardsHit?'<p class="center" style="font-size:1.4rem">🎁 You earned: <b>'+sess.rewardsHit.map(esc).join(", ")+'</b>! Show a grown-up!</p>':'')+(sess.newWords?'<p class="center">📖 '+sess.newWords+' new words unlocked!</p>':'')+
+  (sess.newSticker?'<div class="center pop" style="font-size:4rem">'+sess.newSticker+'</div><p class="center">New sticker!</p>':'')+
+  '<button class="big" id="again">▶ Play again</button><button id="hm">Home</button>';
+  document.getElementById("again").onclick=startPlay;
+  document.getElementById("hm").onclick=function(){view="home";render()};
+}
+function stickers(){
+  var have={};S.stickers.forEach(function(s){have[s]=1});
+  var got=STICKERS.filter(function(s){return have[s]}).length;
+  var h=head()+'<h1>My Sticker Book</h1><p class="center muted">'+got+' of '+STICKERS.length+' stickers. Next one in '+(STARS_PER_STICKER-S.stars%STARS_PER_STICKER)+' stars</p><div class="stickers">'+
+    STICKERS.map(function(s){return have[s]?'<div class="slot pop">'+s+'</div>':'<div class="slot empty">?</div>'}).join("")+'</div>';
+  h+='<h2 class="center" style="margin:8px 0 0">Word badges</h2>';
+  h+=S.badges.length?'<div class="chips" style="justify-content:center">'+S.badges.map(function(b){return '<span class="chip">'+b.e+' '+esc(b.w)+'</span>'}).join("")+'</div>':'<p class="center muted">Master a word to earn a badge!</p>';
+  app.innerHTML=h+'<button id="b">← Back</button>';
+  document.getElementById("b").onclick=function(){view="home";render()};
+}
+function stickersOld(){
+  app.innerHTML=head()+'<h1>My Stickers</h1>'+(S.stickers.length?'<div class="stickers">'+S.stickers.map(function(s){return '<div>'+s+'</div>'}).join("")+'</div>':'<p class="center muted">Earn '+STARS_PER_STICKER+' stars to get your first sticker!</p>')+'<button id="b">← Back</button>';
+  document.getElementById("b").onclick=function(){view="home";render()};
+}
+function gate(){
+  var a=2+Math.floor(Math.random()*7),b=2+Math.floor(Math.random()*7);
+  app.innerHTML='<h1>Grown-ups only</h1><p class="center" style="font-size:1.6rem">What is '+a+' + '+b+'?</p><input id="ans" inputmode="numeric" placeholder="Answer"><div class="row"><button id="bk">← Back</button><button class="good" id="ok">Enter</button></div>';
+  document.getElementById("bk").onclick=function(){view="home";render()};
+  document.getElementById("ok").onclick=function(){
+    var i=document.getElementById("ans");
+    if(parseInt(i.value,10)===a+b){view="parent";render()}else{i.value="";i.placeholder="Try again"}
+  };
+}
+function armed(btn,label,fn){var first=btn.textContent;btn.onclick=function(){if(btn.getAttribute("data-arm")){fn()}else{btn.setAttribute("data-arm","1");btn.textContent=label;setTimeout(function(){btn.removeAttribute("data-arm");btn.textContent=first},3000)}}}
+function backup(){
+  var code="";try{code=btoa(unescape(encodeURIComponent(JSON.stringify(S))))}catch(e){}
+  app.innerHTML='<h1>Backup</h1><p class="muted center">Copy this code and keep it somewhere safe, like a note or an email to yourself. To restore, paste a saved code into the box and tap Restore.</p><textarea id="bc" rows="7">'+code+'</textarea><div class="row"><button id="cp">Copy code</button><button class="good" id="rs">Restore from box</button></div><p class="center muted" id="bmsg"></p><button id="bk3">← Back</button>';
+  var ta=document.getElementById("bc"),msg=document.getElementById("bmsg");
+  document.getElementById("cp").onclick=function(){ta.select();try{document.execCommand("copy");msg.textContent="Copied!"}catch(e){msg.textContent="Press and hold the text to copy it."}};
+  document.getElementById("rs").onclick=function(){
+    try{var o=JSON.parse(decodeURIComponent(escape(atob(ta.value.trim()))));if(!o||!o.words||!o.words.length)throw 0;S=o;save();load();msg.textContent="Restored!";setTimeout(function(){view="parent";render()},700)}catch(e){msg.textContent="That code didn’t work. Paste the whole code and try again."}
+  };
+  document.getElementById("bk3").onclick=function(){view="parent";render()};
+}
+function parent(){
+  app.innerHTML='<h1>Word bank</h1><p class="muted center">Green outline = mastered. Faded = turned off. Tap a word to turn it on or off, or ✕ twice to delete it.</p>'+bulkHtml()+'<div class="chips" id="chips"></div>'+
+  '<textarea id="nw" rows="3" placeholder="Add words from her teacher here (separate with commas, spaces or new lines)" autocapitalize="none"></textarea><button class="good" id="add">Add</button><button id="imp">📂 Import words from a file (CSV or TXT)</button><input type="file" id="fi" accept=".csv,.txt,text/csv,text/plain" style="display:none">'+progressHtml()+''+
+  '<div class="row"><button class="small" id="rp">Reset progress</button><button class="small" id="rd">Reset word list</button></div><button id="b">← Back</button>';
+  var ch=document.getElementById("chips");
+  S.words.forEach(function(x,i){
+    var d=document.createElement("span");d.className="chip"+(x.box>=3?" mast":"")+(x.on===false?" lock":"");
+    d.appendChild(document.createTextNode(x.w+" "));
+    var b=document.createElement("b");b.textContent="✕";b.onclick=function(e){e.stopPropagation();if(b.getAttribute("data-arm")){S.words.splice(i,1);save();parent()}else{b.setAttribute("data-arm","1");b.textContent="delete?";setTimeout(function(){b.removeAttribute("data-arm");b.textContent="✕"},2500)}};d.onclick=function(){x.on=(x.on===false);save();d.classList.toggle("lock",x.on===false);var oc=document.getElementById("onc");if(oc)oc.textContent=unlockedCount()};
+    d.appendChild(b);ch.appendChild(d);
+  });
+  document.getElementById("aon").onclick=function(){S.words.forEach(function(x){x.on=true});save();parent()};
+  document.getElementById("aof").onclick=function(){S.words.forEach(function(x){x.on=false});save();parent()};
+  document.getElementById("n5").onclick=function(){var c=0;S.words.forEach(function(x){if(x.on===false&&c<5){x.on=true;c++}});save();parent()};
+  document.getElementById("nmast").onclick=function(){S.words.forEach(function(x){if(x.box>=3)x.on=false});save();parent()};
+  document.getElementById("au").onclick=function(){S.auto=(S.auto===false);save();parent()};
+  document.getElementById("ra").onclick=function(){var n=document.getElementById("rn").value.replace(/[<>&"]/g,"").trim().slice(0,30),s=parseInt(document.getElementById("rs2").value,10);if(n&&s>0){if(s<=S.stars){toast("She already has "+S.stars+" stars. Pick a higher number.");return}S.rewards.push({n:n,s:s});save();parent()}else{toast("Enter a prize name and a star number")}};
+  Array.prototype.forEach.call(document.querySelectorAll("[data-g]"),function(b){b.onclick=function(){S.rewards[+b.getAttribute("data-g")].given=true;save();parent()}});
+  Array.prototype.forEach.call(document.querySelectorAll("[data-d]"),function(b){b.onclick=function(){S.rewards.splice(+b.getAttribute("data-d"),1);save();parent()}});
+  document.getElementById("tl").onclick=function(){var T=[0,3,4,5,6,8,10];var i=T.indexOf(limit());S.timeLimit=T[(i+1)%T.length];save();parent()};
+  document.getElementById("rl").onclick=function(){S.roundLen=(S.roundLen||10)===10?5:10;save();parent()};
+  document.getElementById("bk2").onclick=function(){backup()};
+  document.getElementById("imp").onclick=function(){document.getElementById("fi").click()};
+  document.getElementById("fi").onchange=function(){
+    var f=this.files&&this.files[0];if(!f)return;
+    var rd=new FileReader();
+    rd.onload=function(){
+      var have={};S.words.forEach(function(x){have[x.w.toLowerCase()]=1});var n=0;
+      String(rd.result).split(/[\r\n,;\t]+/).forEach(function(w){
+        w=w.replace(/[^A-Za-z’']/g,"");
+        if(!w||/^words?$/i.test(w)||have[w.toLowerCase()])return;
+        have[w.toLowerCase()]=1;S.words.push({w:w,box:0,on:true});n++;
+      });
+      save();parent();toast(n?("Added "+n+" new words"):"No new words found in that file");
+    };
+    rd.readAsText(f);
+  };
+  document.getElementById("nm").onclick=function(){var b=this;b.outerHTML='<div class="row"><input id="nmi" value="'+esc(S.name||"")+'" placeholder="Child’s name"><button class="good" id="nms">Save</button></div>';document.getElementById("nms").onclick=function(){S.name=document.getElementById("nmi").value.replace(/[<>&"]/g,"").slice(0,20);save();parent()}};
+  document.getElementById("add").onclick=function(){
+    var v=document.getElementById("nw").value.split(/[\s,]+/);
+    v.forEach(function(w){
+      w=w.replace(/[^A-Za-z’']/g,"");
+      if(w&&!S.words.some(function(x){return x.w.toLowerCase()===w.toLowerCase()}))S.words.push({w:w,box:0,on:true});
+    });
+    save();parent();
+  };
+  armed(document.getElementById("rp"),"Tap again to confirm",function(){S.stars=0;S.stickers=[];S.badges=[];S.log={};S.rewards.forEach(function(r){r.hit=false;r.given=false});S.streak=0;S.lastDay="";S.words.forEach(function(x){x.box=0;x.miss=0});save();parent()});
+  armed(document.getElementById("rd"),"Tap again to confirm",function(){S.words=DEFAULTS.map(function(w,i){return {w:w,box:0,on:i<12}});save();parent()});
+  document.getElementById("b").onclick=function(){view="home";render()};
+}
+document.addEventListener("click",function(e){var t=e.target.closest?e.target.closest("#snd"):null;if(t){S.mute=!S.mute;save();t.textContent=S.mute?"🔇":"🔊";if(!S.mute)chime(true)}});
+if("serviceWorker" in navigator){window.addEventListener("load",function(){navigator.serviceWorker.register("sw.js").catch(function(){})})}
+load();render();
+</script>
+</body>
+</html>
