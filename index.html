@@ -53,6 +53,9 @@ textarea,input{font:inherit;width:100%;padding:10px;border-radius:12px;border:2p
 .tbar i{display:block;height:100%;width:100%;background:var(--good)}
 .tbar i.over{background:var(--muted);opacity:.4}
 .chip{cursor:pointer;user-select:none}
+.grp{border:2px solid var(--line);border-radius:14px;padding:8px;background:var(--card)}
+.gh{display:flex;gap:6px;align-items:center}
+.gl{flex:1;font-weight:700;cursor:pointer}
 .chip.lock{opacity:.45}
 .card2{display:grid;grid-template-columns:1fr 1fr;gap:6px;background:var(--card);border:2px solid var(--line);border-radius:16px;padding:10px}
 .slot.empty{color:var(--muted);opacity:.5;border-style:dashed}
@@ -63,17 +66,36 @@ textarea,input{font:inherit;width:100%;padding:10px;border-radius:12px;border:2p
 <body>
 <main id="app"></main>
 <script>
-var DEFAULTS=["red","dad","mom","kid","to","me","big","dip","the","a","I","see","can","and","up","in","it","is","at","we","go","no","my","sit","hop","run","cat","dog","sun","yes",
+var DEFAULTS_OLD=["red","dad","mom","kid","to","me","big","dip","the","a","I","see","can","and","up","in","it","is","at","we","go","no","my","sit","hop","run","cat","dog","sun","yes",
 "look","play","come","here","you","said","are","was","like","little","one","two","with","for","have","he","she","they","do","so","on","of","down","away","find","funny","help","jump","make","not","blue","yellow","where","three","four","ride","now","good","want","what","ball","tree",
 "bat","hat","mat","pan","man","fan","van","bag","tag","pen","hen","ten","bed","net","wet","pet","pig","wig","fin","win","pin","lip","hip","hit","bit","fit","hot","pot","dot","mop","top","box","fox","dug","bug","hug","mug","rug","fun","bun","cup","pup","nut","cut","bus","mud","jam","ham","cap","map","nap","tap","lap","log","hog","jog","fog","web","zip","sad","mad","bad","had","let","set","got","him","his","did"];
 var STICKERS=["🦄","🐱","🐶","🐸","🦋","🐢","🌈","🚀","🍦","🎈","🐠","🦊","🐼","🌻","🍓","🎨","🐙","🦉","🍪","🎸",
 "🐘","🦁","🐯","🐵","🐰","🐻","🐨","🐷","🐮","🐔","🐧","🦆","🦈","🐬","🐳","🦀","🐞","🐝","🦖","🦕",
 "🌙","☀️","⛄","🌺","🍎","🍌","🍉","🍕","🧁","🎂","🎁","⚽","🚲","🚒","🚜","✈️","⛵","🏰","🎹","🥁"];
+var DEFAULT_GROUPS=[
+['1. First words','red dad mom kid to me big dip the a I see can and up in it is at we go no my sit hop run cat dog sun yes'],
+['2. Easy sight words','look play come here you said are was like little one two with for have he she they do so on of down away find funny help jump make not blue yellow where three four ride now good want what ball tree all am be but by get if or out put say too us went will'],
+['3. Short a words','bat hat mat rat sat fat pan man fan van ran tan bag tag rag cap map nap tap lap jam ham sad mad bad had pad gap'],
+['4. Short i words','pin win fin tin lip zip sip tip hip hit bit fit pig wig dig fig did him his lid six fix'],
+['5. Short o words','hot pot dot got lot mop top pop log hog jog fog box fox job rod nod'],
+['6. Short e and u words','pen hen ten men bed net wet pet let set web jet get beg leg peg dug bug hug mug rug fun bun cup pup nut cut bus mud tub gum hum'],
+['7. More sight words','that this there who white well black brown eat came into must new our please pretty saw soon under after again any ask could every from give going has her how just know may old once open over some stop take thank them then think walk were when your'],
+['8. Everyday words','apple baby bear bird boat boy cake car chair cow door duck egg fish flower girl hand home horse house milk moon rain ring school sheep shoe star toy'],
+['9. Ending sounds','hand lamp nest best desk milk belt gift list fast last test camp bump dust sand tent soft pink sink drink bank tank king sing wing song long hung rang sang bang'],
+['10. Beginning blends','flag flat flip flop fly frog free grab grin green grow glad glass clap clip clock club crab crib crop cry drag drip drop drum dry plan plug plus slam sled slip slow sleep snap snow spot spin stop step stick swim swing trap trip truck try skip'],
+['11. Digraphs (sh, ch, th, wh, ck)','ship shop shut shed shell shirt fish dish wish wash push brush chip chop chin chat check chest much such lunch thin thick thing than them then bath math path moth when whale wheel back deck duck kick lock neck pack pick rock sick sock luck quick'],
+['12. Silent e','cake take name game gate late lake snake same safe wave cave bike five nine line mine kite hide slide smile hope home nose rope note bone stone joke rose those tube cute huge'],
+['13. Vowel teams','rain train tail mail wait paint day stay bee feed keep need sleep sheep sea read team bean meat beach clean boat coat road show slow low moon food room pool soon book foot wood cook house cloud round sound cow town boy joy'],
+['14. Bossy r words','car farm barn park dark yard hard card jar far arm art cart start her fern bird girl dirt shirt turn burn hurt corn horn fork more store short storm door floor your fire care hair chair bear air near hear year'],
+['15. Challenge words','because would should through friend laugh enough together always around before better both bring buy light myself never only own pull right small today warm why work very']
+];
+var DEFAULTS=[],GMAP={},GORDER=[];
+DEFAULT_GROUPS.forEach(function(g){GORDER.push(g[0]);g[1].split(/\s+/).forEach(function(w){var k=w.toLowerCase();if(w&&!GMAP[k]){GMAP[k]=g[0];DEFAULTS.push(w)}})});
 var STARS_PER_STICKER=25, SESSION=10, KEY="sightWordStars.v1";
 var S=null, view="home", sess=null, app=document.getElementById("app");
 
 function fresh(){return {words:DEFAULTS.map(function(w){return {w:w,box:0}}),stars:0,stickers:[],mode:"flip"}}
-function load(){try{var r=localStorage.getItem(KEY);if(r){S=JSON.parse(r)}}catch(e){}if(!S||!S.words)S=fresh();S.streak=S.streak||0;S.lastDay=S.lastDay||"";S.badges=S.badges||[];S.rewards=S.rewards||[];if(S.name===undefined)S.name="Emerson";if(!S.seen)S.seen=DEFAULTS.slice(0,30);var have={};S.words.forEach(function(x){have[x.w.toLowerCase()]=1});DEFAULTS.forEach(function(w){if(S.seen.indexOf(w)<0){S.seen.push(w);if(!have[w.toLowerCase()])S.words.push({w:w,box:0,on:false})}});S.words.forEach(function(x,i){if(x.on===undefined)x.on=S.unlockAll?true:i<Math.min(S.words.length,12+2*mastered())});save()}
+function load(){try{var r=localStorage.getItem(KEY);if(r){S=JSON.parse(r)}}catch(e){}if(!S||!S.words)S=fresh();S.streak=S.streak||0;S.lastDay=S.lastDay||"";S.badges=S.badges||[];S.rewards=S.rewards||[];if(S.name===undefined)S.name="";if(!S.seen)S.seen=DEFAULTS.slice(0,30);var have={};S.words.forEach(function(x){have[x.w.toLowerCase()]=1});DEFAULTS.forEach(function(w){if(S.seen.indexOf(w)<0){S.seen.push(w);if(!have[w.toLowerCase()])S.words.push({w:w,box:0,on:false,g:GMAP[w.toLowerCase()]})}});S.words.forEach(function(x,i){if(x.on===undefined)x.on=S.unlockAll?true:i<Math.min(S.words.length,12+2*mastered())});S.words.forEach(function(x){if(!x.g)x.g=GMAP[x.w.toLowerCase()]||'My words'});save()}
 function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
 function esc(t){var d=document.createElement("div");d.textContent=t;return d.innerHTML}
 function toast(m){var d=document.createElement("div");d.textContent=m;d.style.cssText="position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:12px;z-index:9;text-align:center";document.body.appendChild(d);setTimeout(function(){d.remove()},3500)}
@@ -93,7 +115,7 @@ function confetti(){
   var e=["⭐","🎉","✨","🎈","🌟"];
   for(var i=0;i<30;i++){var s=document.createElement("span");s.className="cf";s.textContent=e[i%e.length];s.style.left=Math.random()*100+"vw";s.style.animationDelay=Math.random()*.6+"s";document.body.appendChild(s);(function(n){setTimeout(function(){n.remove()},3200)})(s)}
 }
-function autoUnlock(){if(S.auto===false)return;var c=0;S.words.forEach(function(x){if(x.on===false&&c<2){x.on=true;c++}});if(c)sess.newWords=(sess.newWords||0)+c}
+function autoUnlock(){if(S.auto===false)return;var off=S.words.filter(function(x){return x.on===false}).sort(function(a,b){return gRankName(a.g||'My words')-gRankName(b.g||'My words')});var c=0;off.slice(0,2).forEach(function(x){x.on=true;c++});if(c)sess.newWords=(sess.newWords||0)+c}
 function bulkHtml(){return '<p class="center">🟢 Words turned on: <b id="onc">'+unlockedCount()+'</b> of '+S.words.length+'</p><div class="row"><button class="small" id="aon">All on</button><button class="small" id="aof">All off</button></div><div class="row"><button class="small" id="n5">Turn on 5 more</button><button class="small" id="nmast">Turn off mastered</button></div><button class="small" id="au">Auto-unlock new words: '+(S.auto===false?"OFF":"ON")+' (2 per mastered word, tap to change)</button>'}
 function rewardsHtml(){
   var h="";
@@ -144,6 +166,32 @@ function summaryHtml(){
   for(var i=0;i<7;i++){var dt=new Date();dt.setDate(dt.getDate()-i);var d=(S.log||{})[today(dt)];
     if(d){var n=d.r+d.m;rows+='<div>'+(i===0?"Today":i===1?"Yesterday":dt.toLocaleDateString(undefined,{weekday:"short"}))+': '+n+' answers, '+d.r+' right, '+d.m+' missed, about '+Math.max(1,Math.round(d.t/60))+' min'+(d.k?', mastered '+d.k:'')+'</div>'}}
   return '<h3 class="center" style="margin:6px 0 0">📅 Last 7 days</h3><div class="card2" style="grid-template-columns:1fr">'+(rows||'<div class="muted">No practice yet.</div>')+'</div>';
+}
+function gRankName(g){if(g==='My words')return -1;var i=GORDER.indexOf(g);return i<0?98:i}
+function renderGroups(ch){
+  window._open=window._open||{};
+  var m={},order=[];
+  S.words.forEach(function(x){var g=x.g||'My words';if(!m[g]){m[g]=[];order.push(g)}m[g].push(x)});
+  order.sort(function(a,b){return gRankName(a)-gRankName(b)});
+  order.forEach(function(g){
+    var ws=m[g],cs=[],box=document.createElement('div'),hd=document.createElement('div'),lab=document.createElement('span'),body=document.createElement('div');
+    box.className='grp';hd.className='gh';lab.className='gl';body.className='chips';
+    body.style.display=window._open[g]?'flex':'none';body.style.marginTop='8px';
+    function upd(){var n=ws.filter(function(x){return x.on!==false}).length;lab.textContent=(window._open[g]?'▾ ':'▸ ')+g+' ('+n+'/'+ws.length+' on)';var oc=document.getElementById('onc');if(oc)oc.textContent=unlockedCount()}
+    function sync(){cs.forEach(function(p){p[1].classList.toggle('lock',p[0].on===false)});upd()}
+    lab.onclick=function(){window._open[g]=!window._open[g];body.style.display=window._open[g]?'flex':'none';upd()};
+    hd.appendChild(lab);
+    ['On','Off'].forEach(function(t){var bt=document.createElement('button');bt.className='small';bt.textContent=t;bt.onclick=function(){ws.forEach(function(x){x.on=(t==='On')});save();sync()};hd.appendChild(bt)});
+    ws.forEach(function(x){
+      var d=document.createElement('span');d.className='chip'+(x.box>=3?' mast':'')+(x.on===false?' lock':'');
+      d.appendChild(document.createTextNode(x.w+' '));
+      var b=document.createElement('b');b.textContent='✕';
+      b.onclick=function(e){e.stopPropagation();if(b.getAttribute('data-arm')){S.words.splice(S.words.indexOf(x),1);save();parent()}else{b.setAttribute('data-arm','1');b.textContent='delete?';setTimeout(function(){b.removeAttribute('data-arm');b.textContent='✕'},2500)}};
+      d.onclick=function(){x.on=(x.on===false);save();sync()};
+      d.appendChild(b);body.appendChild(d);cs.push([x,d]);
+    });
+    box.appendChild(hd);box.appendChild(body);ch.appendChild(box);upd();
+  });
 }
 function isTricky(x){return (x.miss||0)>=2&&x.box<3}
 function pickSession2(){
@@ -303,10 +351,10 @@ function backup(){
   document.getElementById("bk3").onclick=function(){view="parent";render()};
 }
 function parent(){
-  app.innerHTML='<h1>Word bank</h1><p class="muted center">Green outline = mastered. Faded = turned off. Tap a word to turn it on or off, or ✕ twice to delete it.</p>'+bulkHtml()+'<div class="chips" id="chips"></div>'+
+  app.innerHTML='<h1>Word bank</h1><p class="muted center">Green outline = mastered. Faded = turned off. Tap a group to open it, tap a word to turn it on or off, or ✕ twice to delete a word.</p>'+bulkHtml()+'<div id="chips" style="display:flex;flex-direction:column;gap:8px"></div>'+
   '<textarea id="nw" rows="3" placeholder="Add words from her teacher here (separate with commas, spaces or new lines)" autocapitalize="none"></textarea><button class="good" id="add">Add</button><button id="imp">📂 Import words from a file (CSV or TXT)</button><input type="file" id="fi" accept=".csv,.txt,text/csv,text/plain" style="display:none">'+progressHtml()+''+
   '<div class="row"><button class="small" id="rp">Reset progress</button><button class="small" id="rd">Reset word list</button></div><button id="b">← Back</button>';
-  var ch=document.getElementById("chips");
+  var ch=document.getElementById("chips");renderGroups(ch);ch=document.createElement("div");
   S.words.forEach(function(x,i){
     var d=document.createElement("span");d.className="chip"+(x.box>=3?" mast":"")+(x.on===false?" lock":"");
     d.appendChild(document.createTextNode(x.w+" "));
@@ -315,7 +363,7 @@ function parent(){
   });
   document.getElementById("aon").onclick=function(){S.words.forEach(function(x){x.on=true});save();parent()};
   document.getElementById("aof").onclick=function(){S.words.forEach(function(x){x.on=false});save();parent()};
-  document.getElementById("n5").onclick=function(){var c=0;S.words.forEach(function(x){if(x.on===false&&c<5){x.on=true;c++}});save();parent()};
+  document.getElementById("n5").onclick=function(){S.words.filter(function(x){return x.on===false}).sort(function(a,b){return gRankName(a.g||'My words')-gRankName(b.g||'My words')}).slice(0,5).forEach(function(x){x.on=true});save();parent()};
   document.getElementById("nmast").onclick=function(){S.words.forEach(function(x){if(x.box>=3)x.on=false});save();parent()};
   document.getElementById("au").onclick=function(){S.auto=(S.auto===false);save();parent()};
   document.getElementById("ra").onclick=function(){var n=document.getElementById("rn").value.replace(/[<>&"]/g,"").trim().slice(0,30),s=parseInt(document.getElementById("rs2").value,10);if(n&&s>0){if(s<=S.stars){toast("She already has "+S.stars+" stars. Pick a higher number.");return}S.rewards.push({n:n,s:s});save();parent()}else{toast("Enter a prize name and a star number")}};
@@ -333,7 +381,7 @@ function parent(){
       String(rd.result).split(/[\r\n,;\t]+/).forEach(function(w){
         w=w.replace(/[^A-Za-z’']/g,"");
         if(!w||/^words?$/i.test(w)||have[w.toLowerCase()])return;
-        have[w.toLowerCase()]=1;S.words.push({w:w,box:0,on:true});n++;
+        have[w.toLowerCase()]=1;S.words.push({w:w,box:0,on:true,g:'My words'});n++;
       });
       save();parent();toast(n?("Added "+n+" new words"):"No new words found in that file");
     };
@@ -344,12 +392,12 @@ function parent(){
     var v=document.getElementById("nw").value.split(/[\s,]+/);
     v.forEach(function(w){
       w=w.replace(/[^A-Za-z’']/g,"");
-      if(w&&!S.words.some(function(x){return x.w.toLowerCase()===w.toLowerCase()}))S.words.push({w:w,box:0,on:true});
+      if(w&&!S.words.some(function(x){return x.w.toLowerCase()===w.toLowerCase()}))S.words.push({w:w,box:0,on:true,g:'My words'});
     });
     save();parent();
   };
   armed(document.getElementById("rp"),"Tap again to confirm",function(){S.stars=0;S.stickers=[];S.badges=[];S.log={};S.rewards.forEach(function(r){r.hit=false;r.given=false});S.streak=0;S.lastDay="";S.words.forEach(function(x){x.box=0;x.miss=0});save();parent()});
-  armed(document.getElementById("rd"),"Tap again to confirm",function(){S.words=DEFAULTS.map(function(w,i){return {w:w,box:0,on:i<12}});save();parent()});
+  armed(document.getElementById("rd"),"Tap again to confirm",function(){S.words=DEFAULTS.map(function(w,i){return {w:w,box:0,on:i<12,g:GMAP[w.toLowerCase()]}});save();parent()});
   document.getElementById("b").onclick=function(){view="home";render()};
 }
 document.addEventListener("click",function(e){var t=e.target.closest?e.target.closest("#snd"):null;if(t){S.mute=!S.mute;save();t.textContent=S.mute?"🔇":"🔊";if(!S.mute)chime(true)}});
